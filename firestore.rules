@@ -1,0 +1,83 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Fields: uid, email, displayName, role, grade, photoURL
+    //
+    // Collection: lessons
+    // Fields: title, description, content, category, videoUrl, createdAt
+    //
+    // Collection: papers
+    // Fields: title, year, type, fileUrl, createdAt
+    //
+    // Collection: submissions
+    // Fields: studentId, studentName, paperId, paperTitle, status, score, feedback, submittedAt
+    //
+    // Collection: announcements
+    // Fields: title, content, date
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher' ||
+        (request.auth.token.email == "rnimsara54@gmail.com" && request.auth.token.email_verified == true)
+      );
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role']) &&
+             data.uid is string &&
+             data.email is string &&
+             data.role in ['student', 'teacher'];
+    }
+
+    function isValidLesson(data) {
+      return data.keys().hasAll(['title', 'category', 'createdAt']) &&
+             data.title is string && data.title.size() < 200 &&
+             data.category in ['Grammar', 'Vocabulary', 'Literature', 'Writing', 'Speaking'];
+    }
+
+    // Rules
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isAuthenticated() && (isOwner(userId) || isAdmin()) && isValidUser(request.resource.data);
+    }
+
+    match /lessons/{lessonId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /papers/{paperId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /submissions/{submissionId} {
+      allow read: if isAuthenticated() && (request.auth.uid == resource.data.studentId || isAdmin());
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.studentId;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /announcements/{announcementId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+}

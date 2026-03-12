@@ -1,0 +1,94 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile for students and teachers",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "teacher"] },
+        "grade": { "type": "string" },
+        "photoURL": { "type": "string" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Lesson": {
+      "title": "Lesson",
+      "description": "English lesson content",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "content": { "type": "string" },
+        "category": { "type": "string", "enum": ["Grammar", "Vocabulary", "Literature", "Writing", "Speaking"] },
+        "videoUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "category", "createdAt"]
+    },
+    "Paper": {
+      "title": "Paper",
+      "description": "Past papers and model papers",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "year": { "type": "string" },
+        "type": { "type": "string", "enum": ["Past Paper", "Model Paper", "Term Test"] },
+        "fileUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "type", "createdAt"]
+    },
+    "Submission": {
+      "title": "Submission",
+      "description": "Student paper submissions",
+      "type": "object",
+      "properties": {
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "paperId": { "type": "string" },
+        "paperTitle": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "graded"] },
+        "score": { "type": "number" },
+        "feedback": { "type": "string" },
+        "submittedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["studentId", "paperId", "status", "submittedAt"]
+    },
+    "Announcement": {
+      "title": "Announcement",
+      "description": "Class announcements",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "content", "date"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/lessons/{lessonId}": {
+      "schema": "Lesson",
+      "description": "Lesson materials"
+    },
+    "/papers/{paperId}": {
+      "schema": "Paper",
+      "description": "Exam papers"
+    },
+    "/submissions/{submissionId}": {
+      "schema": "Submission",
+      "description": "Student submissions"
+    },
+    "/announcements/{announcementId}": {
+      "schema": "Announcement",
+      "description": "Class announcements"
+    }
+  }
+}
